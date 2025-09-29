@@ -31,7 +31,7 @@ export const authAPI = {
 
 // User APIs
 export const userAPI = {
-  getProfile: () => api.get('/api/users/profile'),
+  getProfile: () => api.get('/api/users/me'),
   searchUsers: (query) => api.get(`/api/users/search?q=${query}`),
 };
 

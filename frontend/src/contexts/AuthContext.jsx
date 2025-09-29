@@ -50,14 +50,22 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       return { 
         success: false, 
-        error: error.response?.data?.message || 'Login failed' 
+        error: error.response?.data?.error || error.response?.data?.message || 'Login failed' 
       };
     }
   };
 
   const register = async (userData) => {
     try {
-      const response = await authAPI.register(userData);
+      // Map fullName to displayName for backend compatibility
+      const registrationData = {
+        username: userData.username,
+        email: userData.email,
+        password: userData.password,
+        displayName: userData.fullName || userData.displayName
+      };
+      
+      const response = await authAPI.register(registrationData);
       const { token, user } = response.data;
       localStorage.setItem('token', token);
       setToken(token);
@@ -67,7 +75,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       return { 
         success: false, 
-        error: error.response?.data?.message || 'Registration failed' 
+        error: error.response?.data?.error || error.response?.data?.message || 'Registration failed' 
       };
     }
   };
