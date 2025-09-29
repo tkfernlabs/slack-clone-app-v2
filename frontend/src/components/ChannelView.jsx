@@ -35,7 +35,8 @@ const ChannelView = ({ channel }) => {
     try {
       setLoading(true);
       const response = await messageAPI.getMessages(channel.id);
-      setMessages(response.data.messages || []);
+      // Backend returns array directly, not wrapped in messages property
+      setMessages(Array.isArray(response.data) ? response.data : response.data.messages || []);
     } catch (error) {
       console.error('Failed to load messages:', error);
     } finally {

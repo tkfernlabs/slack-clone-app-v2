@@ -156,5 +156,90 @@ router.get('/:id/members', authenticateToken, async (req, res) => {
   }
 });
 
+// Get messages in a channel
+router.get('/:id/messages', authenticateToken, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const offset = (page - 1) * limit;
+
+    // Check if user is member of channel
+    const memberCheck = await pool.query(
+      'SELECT * FROM channel_members WHERE channel_id = $1 AND user_id = $2',
+      [req.params.id, req.user.userId]
+    );
+
+    if (memberCheck.rows.length === 0) {
+      return res.status(403).json({ error: 'You must be a member of this channel' });
+    }
+
+    const result = await pool.query(
+      `SELECT m.*, u.username, u.display_name, u.avatar_url,
+              (SELECT COUNT(*) FROM messages WHERE thread_id = m.id) as reply_count
+       FROM messages m
+       JOIN users u ON m.user_id = u.id
+       WHERE m.channel_id = $1 AND m.thread_id IS NULL
+       ORDER BY m.created_at ASC
+       LIMIT $2 OFFSET $3`,
+      [req.params.id, limit, offset]
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching messages:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Send message to channel
+router.post('/:id/messages',
+  authenticateToken,
+  [
+    body('content').notEmpty().trim()
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { content, parentId } = req.body;
+
+    try {
+      // Check if user is member of channel
+      const memberCheck = await pool.query(
+        'SELECT * FROM channel_members WHERE channel_id = $1 AND user_id = $2',
+        [req.params.id, req.user.userId]
+      );
+
+      if (memberCheck.rows.length === 0) {
+        return res.status(403).json({ error: 'You must be a member of this channel' });
+      }
+
+      const result = await pool.query(
+        'INSERT INTO messages (channel_id, user_id, content, thread_id) VALUES ($1, $2, $3, $4) RETURNING *',
+        [req.params.id, req.user.userId, content, parentId || null]
+      );
+
+      // Get user details for the response
+      const userResult = await pool.query(
+        'SELECT username, display_name, avatar_url FROM users WHERE id = $1',
+        [req.user.userId]
+      );
+
+      const message = {
+        ...result.rows[0],
+        ...userResult.rows[0],
+        reply_count: 0
+      };
+
+      res.status(201).json(message);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      res.status(500).json({ error: 'Server error' });
+    }
+  }
+);
+
 module.exports = router;
 
