@@ -27,8 +27,7 @@ router.get('/', authenticateToken, async (req, res) => {
 router.post('/',
   authenticateToken,
   [
-    body('name').notEmpty().trim(),
-    body('slug').notEmpty().trim().isSlug()
+    body('name').notEmpty().trim()
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -36,23 +35,35 @@ router.post('/',
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, slug } = req.body;
+    const { name, description } = req.body;
+    
+    // Auto-generate slug from name if not provided
+    let slug = req.body.slug || name.toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
 
     try {
-      // Check if slug already exists
-      const slugExists = await pool.query(
+      // Check if slug already exists and make it unique if needed
+      let finalSlug = slug;
+      let slugExists = await pool.query(
         'SELECT * FROM workspaces WHERE slug = $1',
-        [slug]
+        [finalSlug]
       );
-
-      if (slugExists.rows.length > 0) {
-        return res.status(400).json({ error: 'Workspace slug already exists' });
+      
+      let counter = 1;
+      while (slugExists.rows.length > 0) {
+        finalSlug = `${slug}-${counter}`;
+        slugExists = await pool.query(
+          'SELECT * FROM workspaces WHERE slug = $1',
+          [finalSlug]
+        );
+        counter++;
       }
 
       // Create workspace
       const workspaceResult = await pool.query(
-        'INSERT INTO workspaces (name, slug, created_by) VALUES ($1, $2, $3) RETURNING *',
-        [name, slug, req.user.userId]
+        'INSERT INTO workspaces (name, slug, description, created_by) VALUES ($1, $2, $3, $4) RETURNING *',
+        [name, finalSlug, description || null, req.user.userId]
       );
 
       const workspace = workspaceResult.rows[0];
@@ -159,6 +170,75 @@ router.post('/:id/invite',
       res.json({ message: 'User invited successfully' });
     } catch (error) {
       console.error('Error inviting user:', error);
+      res.status(500).json({ error: 'Server error' });
+    }
+  }
+);
+
+// Get all channels in a workspace
+router.get('/:id/channels', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT c.*, 
+              EXISTS(SELECT 1 FROM channel_members WHERE channel_id = c.id AND user_id = $2) as is_member
+       FROM channels c
+       WHERE c.workspace_id = $1
+       ORDER BY c.created_at ASC`,
+      [req.params.id, req.user.userId]
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching channels:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Create channel in workspace
+router.post('/:id/channels',
+  authenticateToken,
+  [
+    body('name').notEmpty().trim(),
+    body('description').optional().trim(),
+    body('isPrivate').optional().isBoolean()
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { name, description, isPrivate } = req.body;
+    const workspaceId = req.params.id;
+
+    try {
+      // Check if user is member of workspace
+      const memberCheck = await pool.query(
+        'SELECT * FROM workspace_members WHERE workspace_id = $1 AND user_id = $2',
+        [workspaceId, req.user.userId]
+      );
+
+      if (memberCheck.rows.length === 0) {
+        return res.status(403).json({ error: 'You must be a member of the workspace' });
+      }
+
+      // Create channel
+      const channelResult = await pool.query(
+        'INSERT INTO channels (workspace_id, name, description, is_private, created_by) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+        [workspaceId, name, description, isPrivate || false, req.user.userId]
+      );
+
+      const channel = channelResult.rows[0];
+
+      // Add creator to channel
+      await pool.query(
+        'INSERT INTO channel_members (channel_id, user_id) VALUES ($1, $2)',
+        [channel.id, req.user.userId]
+      );
+
+      res.status(201).json(channel);
+    } catch (error) {
+      console.error('Error creating channel:', error);
       res.status(500).json({ error: 'Server error' });
     }
   }
