@@ -44,40 +44,47 @@ The application currently lacks direct message (1-on-1) functionality. Users sho
 
 ---
 
-## Issue 2: Emoji Reactions Require Page Refresh 🐛 HIGH PRIORITY
-**Severity**: HIGH - Poor UX, breaks real-time experience
-**Status**: 🚧 NOT FIXED - Needs implementation
+## Issue 2: Emoji Reactions - Button Not Visible 🐛 HIGH PRIORITY
+**Severity**: HIGH - Feature exists but UI is not visible
+**Status**: 🚧 IN PROGRESS - Investigation complete
 **Added**: January 30, 2025
 
-### Description
-When a user adds an emoji reaction to a message, the reaction does not appear immediately. Users must refresh the page to see reactions appear on messages.
+### Investigation Findings
+✅ Backend WebSocket emission: WORKING (line 238 in messages.js)
+✅ Frontend WebSocket listener: WORKING (line 24 in ChannelView.jsx)
+✅ Message component has reaction button: EXISTS (line 87-92 in Message.jsx)
+❌ UI Issue: Reaction button (😊) not visible in the UI
 
 ### Root Cause
-Backend likely not broadcasting WebSocket events when reactions are added. Frontend may not be listening for reaction update events.
+The `.message-actions` div containing the reaction button exists in the Message component but is NOT VISIBLE in the rendered page. This could be due to:
+1. CSS display/visibility issue
+2. Z-index/positioning problem
+3. Component not rendering the actions div
+4. CSS being overridden
 
 ### Required Fix
 
-#### Backend Fix
-- [ ] Modify `/backend/routes/messages.js` POST `/:id/reactions` endpoint
-- [ ] Fetch channel_id from the message
-- [ ] Emit `new_reaction` WebSocket event to all users in the channel
-- [ ] Include updated reactions array with emoji and count
+#### Investigation Needed
+- [ ] Check if `.message-actions` div is actually rendered in DOM (use browser inspector)
+- [ ] Check computed CSS for `.btn-reaction` button
+- [ ] Verify if there's CSS hiding the actions on initial render
+- [ ] Check if hover state is required to show actions
 
-#### Frontend Fix
-- [ ] Modify `/frontend/src/components/ChannelView.jsx` (or Message component)
-- [ ] Add WebSocket listener for `new_reaction` events
-- [ ] Update message reactions in local state instantly
-- [ ] Remove any unnecessary page refresh calls
+#### Potential Fixes
+- [ ] Add CSS to make `.message-actions` visible by default OR on hover
+- [ ] Ensure z-index is correct for `.message-actions`
+- [ ] Add `display: flex` or `display: block` to `.message-actions`
+- [ ] Test if opacity or visibility is hiding the button
 
 ### Expected Behavior (After Fix)
-- User clicks emoji button → picker appears
+- User sees 😊 button below each message (or on hover)
+- User clicks button → emoji picker appears with common emojis
 - User selects emoji → API call succeeds
 - WebSocket broadcasts to all channel members
-- Reaction appears instantly for all users
-- No page refresh required
+- Reaction appears instantly for all users WITHOUT page refresh
 
 ### Priority
-**HIGH** - Affects user experience significantly
+**HIGH** - WebSocket functionality is already working, just need to make UI visible
 
 ---
 
