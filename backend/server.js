@@ -63,6 +63,11 @@ io.on('connection', (socket) => {
         socket.userId = user.id;
         socket.username = user.username;
         connectedUsers.set(user.id, socket.id);
+        
+        // Join user-specific room for DM reactions and notifications
+        socket.join(`user_${user.id}`);
+        console.log(`User ${user.id} joined their user room: user_${user.id}`);
+        
         socket.emit('authenticated', { userId: user.id, username: user.username });
         io.emit('user_status', { userId: user.id, status: 'online' });
       } else {
