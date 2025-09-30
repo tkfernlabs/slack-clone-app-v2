@@ -79,6 +79,9 @@ export const dmAPI = {
     api.get(`/api/direct-messages/user/${userId}?page=${page}&limit=${limit}`),
   update: (messageId, data) => api.put(`/api/direct-messages/${messageId}`, data),
   delete: (messageId) => api.delete(`/api/direct-messages/${messageId}`),
+  addReaction: (messageId, emoji) => api.post(`/api/direct-messages/${messageId}/reactions`, { emoji }),
+  removeReaction: (messageId, emoji) => api.delete(`/api/direct-messages/${messageId}/reactions/${emoji}`),
+  getReactions: (messageId) => api.get(`/api/direct-messages/${messageId}/reactions`),
 };
 
 // Users API (for finding users to DM)

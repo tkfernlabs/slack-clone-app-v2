@@ -68,7 +68,39 @@ router.get('/user/:userId', authenticateToken, async (req, res) => {
 
     const result = await pool.query(query, params);
 
-    res.json(result.rows.reverse());
+    // Get reactions for all messages
+    const messageIds = result.rows.map(row => row.id);
+    let messagesWithReactions = result.rows;
+
+    if (messageIds.length > 0) {
+      const reactionsResult = await pool.query(
+        `SELECT r.direct_message_id, r.emoji, COUNT(*) as count
+         FROM reactions r
+         WHERE r.direct_message_id = ANY($1)
+         GROUP BY r.direct_message_id, r.emoji`,
+        [messageIds]
+      );
+
+      // Group reactions by message
+      const reactionsByMessage = {};
+      reactionsResult.rows.forEach(r => {
+        if (!reactionsByMessage[r.direct_message_id]) {
+          reactionsByMessage[r.direct_message_id] = [];
+        }
+        reactionsByMessage[r.direct_message_id].push({
+          emoji: r.emoji,
+          count: parseInt(r.count)
+        });
+      });
+
+      // Add reactions to messages
+      messagesWithReactions = result.rows.map(msg => ({
+        ...msg,
+        reactions: reactionsByMessage[msg.id] || []
+      }));
+    }
+
+    res.json(messagesWithReactions.reverse());
   } catch (error) {
     console.error('Error fetching direct messages:', error);
     res.status(500).json({ error: 'Server error' });
@@ -180,6 +212,142 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     res.json({ message: 'Direct message deleted successfully' });
   } catch (error) {
     console.error('Error deleting direct message:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Add reaction to direct message
+router.post('/:id/reactions',
+  authenticateToken,
+  [body('emoji').notEmpty().trim()],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+      // Get direct message info including sender and recipient
+      const dmResult = await pool.query(
+        'SELECT sender_id, recipient_id FROM direct_messages WHERE id = $1',
+        [req.params.id]
+      );
+
+      if (dmResult.rows.length === 0) {
+        return res.status(404).json({ error: 'Direct message not found' });
+      }
+
+      const dm = dmResult.rows[0];
+      
+      // Verify user is part of this DM conversation
+      if (dm.sender_id !== req.user.userId && dm.recipient_id !== req.user.userId) {
+        return res.status(403).json({ error: 'Not authorized to react to this message' });
+      }
+
+      // Add reaction
+      await pool.query(
+        'INSERT INTO reactions (direct_message_id, user_id, emoji) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
+        [req.params.id, req.user.userId, req.body.emoji]
+      );
+
+      // Get updated reactions for this direct message
+      const reactionsResult = await pool.query(
+        `SELECT r.emoji, COUNT(*) as count
+         FROM reactions r
+         WHERE r.direct_message_id = $1
+         GROUP BY r.emoji`,
+        [req.params.id]
+      );
+
+      const reactionData = {
+        messageId: parseInt(req.params.id),
+        isDm: true,
+        senderId: dm.sender_id,
+        recipientId: dm.recipient_id,
+        reactions: reactionsResult.rows
+      };
+
+      // Emit WebSocket event for real-time updates to both sender and recipient
+      if (req.io) {
+        console.log(`Emitting dm_reaction to user_${dm.sender_id} and user_${dm.recipient_id}:`, reactionData);
+        req.io.to(`user_${dm.sender_id}`).emit('dm_reaction', reactionData);
+        req.io.to(`user_${dm.recipient_id}`).emit('dm_reaction', reactionData);
+      }
+
+      res.json({ message: 'Reaction added successfully', reactions: reactionsResult.rows });
+    } catch (error) {
+      console.error('Error adding reaction to DM:', error);
+      res.status(500).json({ error: 'Server error' });
+    }
+  }
+);
+
+// Remove reaction from direct message
+router.delete('/:id/reactions/:emoji', authenticateToken, async (req, res) => {
+  try {
+    // Get direct message info
+    const dmResult = await pool.query(
+      'SELECT sender_id, recipient_id FROM direct_messages WHERE id = $1',
+      [req.params.id]
+    );
+
+    if (dmResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Direct message not found' });
+    }
+
+    const dm = dmResult.rows[0];
+
+    await pool.query(
+      'DELETE FROM reactions WHERE direct_message_id = $1 AND user_id = $2 AND emoji = $3',
+      [req.params.id, req.user.userId, req.params.emoji]
+    );
+
+    // Get updated reactions
+    const reactionsResult = await pool.query(
+      `SELECT r.emoji, COUNT(*) as count
+       FROM reactions r
+       WHERE r.direct_message_id = $1
+       GROUP BY r.emoji`,
+      [req.params.id]
+    );
+
+    const reactionData = {
+      messageId: parseInt(req.params.id),
+      isDm: true,
+      senderId: dm.sender_id,
+      recipientId: dm.recipient_id,
+      reactions: reactionsResult.rows
+    };
+
+    // Emit WebSocket event for real-time updates
+    if (req.io) {
+      req.io.to(`user_${dm.sender_id}`).emit('dm_reaction', reactionData);
+      req.io.to(`user_${dm.recipient_id}`).emit('dm_reaction', reactionData);
+    }
+
+    res.json({ message: 'Reaction removed successfully', reactions: reactionsResult.rows });
+  } catch (error) {
+    console.error('Error removing reaction from DM:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get reactions for a direct message
+router.get('/:id/reactions', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT r.emoji, COUNT(*) as count, 
+              array_agg(json_build_object('id', u.id, 'username', u.username, 'display_name', u.display_name)) as users
+       FROM reactions r
+       JOIN users u ON r.user_id = u.id
+       WHERE r.direct_message_id = $1
+       GROUP BY r.emoji`,
+      [req.params.id]
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching DM reactions:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });

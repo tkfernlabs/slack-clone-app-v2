@@ -1,11 +1,75 @@
 # CRITICAL ISSUES TO FIX
 
-**Last Updated**: January 30, 2025 10:17 AM
-**Status**: 🎉 2/3 FIXED - 1 issue remaining (Direct Messages)
+**Last Updated**: January 30, 2025 10:30 PM
+**Status**: 🚧 NEW ISSUES ADDED - DM Reactions Real-time + UI Design Update
 
 ---
 
-## Issue 1: Direct Messages (DMs) Support 🚨 HIGH PRIORITY
+## Issue 1: DM Reactions Not Showing Immediately 🐛 HIGH PRIORITY
+**Severity**: HIGH - Real-time feature not working for DMs
+**Status**: 🚨 NOT FIXED
+**Added**: January 30, 2025 10:30 PM
+
+### Problem
+When a user adds a reaction (emoji) to a direct message, the reaction does not appear immediately. User needs to refresh the page to see the reaction.
+
+### Expected Behavior
+- User adds emoji reaction to DM
+- Reaction appears instantly without refresh (like it does for channel messages)
+
+### Root Cause
+Backend likely not emitting WebSocket events for DM reactions, or frontend not listening for them.
+
+### Files to Check
+- `/backend/routes/reactions.js` - Check if DM reactions emit WebSocket events
+- `/frontend/src/components/DirectMessageView.jsx` - Check if listening for reaction events
+- Backend WebSocket handlers for direct message reactions
+
+### Priority
+**HIGH** - Real-time functionality is core to the app
+
+---
+
+## Issue 2: UI Design Update - Match Slack Design 🎨 HIGH PRIORITY
+**Severity**: MEDIUM-HIGH - UI doesn't match professional Slack design
+**Status**: 🚨 NOT FIXED
+**Added**: January 30, 2025 10:30 PM
+
+### Problem
+Current UI doesn't look professional. User wants it to match the Slack design at https://ibb.co/1GZpRMmT
+
+### Design Changes Needed
+1. **Sidebar** - Improve visual design:
+   - Better spacing and hierarchy
+   - Cleaner channel/DM list styling
+   - Professional workspace selector
+   
+2. **Direct Messages Section** - Should look like Slack:
+   - "Direct messages" header with expand/collapse
+   - User avatars/icons for DMs
+   - Better visual hierarchy
+   
+3. **Message Area** - Professional styling:
+   - Better message formatting
+   - Professional user avatars
+   - Improved spacing and typography
+   
+4. **Color Scheme** - Match Slack's dark purple sidebar with white/light content area
+
+### Reference Design
+https://ibb.co/1GZpRMmT - Shows professional Slack UI with:
+- Dark purple sidebar (#3f0e40 or similar)
+- Clean white content area
+- Professional typography and spacing
+- User avatars throughout
+- Better visual hierarchy
+
+### Priority
+**MEDIUM-HIGH** - Important for professional appearance
+
+---
+
+## Issue 3: Direct Messages (DMs) Support 🚨 HIGH PRIORITY
 **Severity**: HIGH - Core feature not fully visible
 **Status**: 🚧 PARTIALLY WORKING - Backend complete, frontend UI issue
 **Added**: January 30, 2025
@@ -141,8 +205,9 @@ During testing, workspace creation was found to be **FULLY FUNCTIONAL**.
 
 ## TRACKING SUMMARY
 
-### Total Issues: 3
-- ✅ Fixed: 2 (Emoji Reactions, Workspace Creation)
+### Total Issues: 5
+- ✅ Fixed: 2 (Emoji Reactions in Channels, Workspace Creation)
+- 🚨 Critical: 2 (DM Reactions Real-time, UI Design Update)
 - 🚧 In Progress: 1 (Direct Messages - UI visibility issue)
 - 🚨 Blocked: 0
 

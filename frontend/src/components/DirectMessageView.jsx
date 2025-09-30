@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { dmAPI } from '../services/api';
 import socketService from '../services/socket';
 import { useAuth } from '../contexts/AuthContext';
-import Message from './Message';
+import MessageNew from './MessageNew';
 
 const DirectMessageView = ({ otherUser }) => {
   const { user } = useAuth();
@@ -18,9 +18,13 @@ const DirectMessageView = ({ otherUser }) => {
 
       // Listen for new direct messages
       socketService.on('new_direct_message', handleNewDirectMessage);
+      
+      // Listen for DM reactions
+      socketService.on('dm_reaction', handleDmReaction);
 
       return () => {
         socketService.off('new_direct_message', handleNewDirectMessage);
+        socketService.off('dm_reaction', handleDmReaction);
       };
     }
   }, [otherUser]);
@@ -56,6 +60,28 @@ const DirectMessageView = ({ otherUser }) => {
         }
         return [...prev, message];
       });
+    }
+  };
+
+  const handleDmReaction = (data) => {
+    console.log('Received DM reaction via WebSocket:', data);
+    
+    // Update the reactions for the specific message
+    setMessages((prev) => prev.map(msg => 
+      msg.id === data.messageId 
+        ? { ...msg, reactions: data.reactions }
+        : msg
+    ));
+  };
+
+  const handleReaction = async (messageId, emoji) => {
+    try {
+      console.log('Adding reaction to DM:', messageId, emoji);
+      await dmAPI.addReaction(messageId, emoji);
+      console.log('DM reaction added successfully');
+    } catch (error) {
+      console.error('Failed to add DM reaction:', error);
+      alert('Failed to add reaction. Please try again.');
     }
   };
 
@@ -146,7 +172,7 @@ const DirectMessageView = ({ otherUser }) => {
           </div>
         ) : (
           messages.map((message) => (
-            <Message
+            <MessageNew
               key={message.id}
               message={{
                 ...message,
@@ -157,7 +183,7 @@ const DirectMessageView = ({ otherUser }) => {
                 avatar_url: message.sender_avatar_url
               }}
               currentUser={user}
-              onReaction={() => {}} // DMs don't support reactions yet
+              onReaction={(emoji) => handleReaction(message.id, emoji)}
             />
           ))
         )}
