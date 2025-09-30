@@ -64,7 +64,7 @@ const DirectMessageView = ({ otherUser }) => {
   };
 
   const handleDmReaction = (data) => {
-    console.log('Received DM reaction via WebSocket:', data);
+    console.log('🔔 Received DM reaction via WebSocket:', data);
     
     // Update the reactions for the specific message
     setMessages((prev) => prev.map(msg => 
@@ -76,11 +76,37 @@ const DirectMessageView = ({ otherUser }) => {
 
   const handleReaction = async (messageId, emoji) => {
     try {
-      console.log('Adding reaction to DM:', messageId, emoji);
+      console.log('👍 Adding reaction to DM:', messageId, emoji);
+      
+      // Optimistic update - immediately show the reaction in the UI
+      setMessages((prev) => prev.map(msg => {
+        if (msg.id === messageId) {
+          const existingReactions = msg.reactions || [];
+          const emojiReaction = existingReactions.find(r => r.emoji === emoji);
+          
+          let newReactions;
+          if (emojiReaction) {
+            // Increment count
+            newReactions = existingReactions.map(r => 
+              r.emoji === emoji ? { ...r, count: (r.count || 0) + 1 } : r
+            );
+          } else {
+            // Add new reaction
+            newReactions = [...existingReactions, { emoji, count: 1 }];
+          }
+          
+          return { ...msg, reactions: newReactions };
+        }
+        return msg;
+      }));
+      
+      // Send to backend (backend will emit WebSocket event for other users)
       await dmAPI.addReaction(messageId, emoji);
-      console.log('DM reaction added successfully');
+      console.log('✅ DM reaction added successfully');
     } catch (error) {
-      console.error('Failed to add DM reaction:', error);
+      console.error('❌ Failed to add DM reaction:', error);
+      // Reload messages to get correct state
+      loadMessages();
       alert('Failed to add reaction. Please try again.');
     }
   };

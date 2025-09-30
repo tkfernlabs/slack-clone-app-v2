@@ -808,3 +808,331 @@ button[type="submit"]:hover,
   }
 }
 
+
+/* ============= NEW SLACK-STYLE SIDEBAR ============= */
+
+.sidebar-container {
+  display: flex;
+  height: 100vh;
+}
+
+/* LEFT ICON BAR */
+.sidebar-icons {
+  width: 70px;
+  background-color: var(--slack-purple);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 0;
+  gap: 8px;
+}
+
+.workspace-icon {
+  width: 44px;
+  height: 44px;
+  background-color: white;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-radius 0.2s;
+  margin-bottom: 8px;
+}
+
+.workspace-icon:hover {
+  border-radius: 12px;
+}
+
+.workspace-initial {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--slack-purple);
+}
+
+.sidebar-icon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+  font-size: 24px;
+  position: relative;
+}
+
+.sidebar-icon:hover {
+  background-color: var(--slack-purple-hover);
+}
+
+.sidebar-icon.active {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-icon.active::after {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 24px;
+  background-color: white;
+  border-radius: 0 2px 2px 0;
+}
+
+.sidebar-icon.add-workspace {
+  margin-top: auto;
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  font-size: 28px;
+  background: none;
+}
+
+.sidebar-icon.add-workspace:hover {
+  border-color: rgba(255, 255, 255, 0.6);
+  background-color: var(--slack-purple-hover);
+}
+
+.sidebar-icons-divider {
+  width: 32px;
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.2);
+  margin: 4px 0;
+}
+
+/* SLACK PRO BANNER */
+.slack-pro-banner {
+  margin: 12px 12px;
+  padding: 12px;
+  background: linear-gradient(135deg, #5b2258 0%, #611f69 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.slack-pro-banner:hover {
+  transform: translateY(-2px);
+}
+
+.pro-banner-icon {
+  font-size: 20px;
+}
+
+.pro-banner-text {
+  flex: 1;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.pro-banner-subtext {
+  font-size: 11px;
+  font-weight: 400;
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+/* QUICK LINKS */
+.sidebar-quick-links {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.quick-link {
+  padding: 6px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: background-color 0.2s;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.quick-link:hover {
+  background-color: var(--slack-channel-hover);
+}
+
+.quick-link-icon {
+  font-size: 16px;
+  opacity: 0.9;
+}
+
+.quick-link.starred {
+  flex-direction: column;
+  align-items: flex-start;
+  padding-bottom: 12px;
+}
+
+.quick-link-hint {
+  font-size: 12px;
+  opacity: 0.6;
+  margin-top: 4px;
+  margin-left: 24px;
+  line-height: 1.3;
+}
+
+.quick-link.add-link {
+  font-size: 14px;
+  opacity: 0.7;
+  padding-left: 32px;
+}
+
+.quick-link.add-link:hover {
+  opacity: 1;
+}
+
+/* SECTION HEADER */
+.section-header {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background-color 0.2s;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.section-header:hover {
+  background-color: var(--slack-channel-hover);
+}
+
+.section-header .arrow {
+  font-size: 10px;
+  opacity: 0.8;
+  transition: transform 0.2s;
+}
+
+.section-title {
+  flex: 1;
+}
+
+/* APP ITEM */
+.app-item {
+  padding: 6px 16px;
+  padding-left: 32px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: background-color 0.2s;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.app-item:hover {
+  background-color: var(--slack-channel-hover);
+}
+
+.app-icon {
+  font-size: 16px;
+}
+
+.app-name {
+  flex: 1;
+}
+
+.app-badge {
+  background-color: #e01e5a;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* SIDEBAR FOOTER */
+.sidebar-footer {
+  padding: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: auto;
+}
+
+.invite-button {
+  width: 100%;
+  padding: 10px 16px;
+  background-color: white;
+  color: var(--slack-purple);
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background-color 0.2s;
+}
+
+.invite-button:hover {
+  background-color: #f8f8f8;
+}
+
+.invite-icon {
+  font-size: 16px;
+}
+
+/* Update existing sidebar styling */
+.sidebar {
+  background-color: var(--slack-purple);
+  color: white;
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Workspace Header Update */
+.sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-header .workspace-name {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sidebar-header .workspace-name::after {
+  content: '▼';
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+.sidebar-header .user-info {
+  font-size: 13px;
+  opacity: 0.8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-indicator.online {
+  color: #2bac76;
+}
+
+/* ============= END SLACK-STYLE SIDEBAR ============= */
+
+

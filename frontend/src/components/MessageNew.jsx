@@ -23,7 +23,8 @@ const MessageNew = ({ message, currentUser, onReaction }) => {
 
   const handleEmojiClick = (emoji) => {
     if (onReaction) {
-      onReaction(message.id, emoji);
+      // Call onReaction with just emoji - the parent component handles messageId
+      onReaction(emoji);
     }
     setShowEmojiPicker(false);
   };
