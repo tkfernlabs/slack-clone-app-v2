@@ -173,7 +173,7 @@ router.get('/:id/messages', authenticateToken, async (req, res) => {
       return res.status(403).json({ error: 'You must be a member of this channel' });
     }
 
-    const result = await pool.query(
+    const messagesResult = await pool.query(
       `SELECT m.*, u.username, u.display_name, u.avatar_url,
               (SELECT COUNT(*) FROM messages WHERE thread_id = m.id) as reply_count
        FROM messages m
@@ -184,7 +184,21 @@ router.get('/:id/messages', authenticateToken, async (req, res) => {
       [req.params.id, limit, offset]
     );
 
-    res.json(result.rows);
+    // Fetch reactions for each message
+    const messages = messagesResult.rows;
+    for (let message of messages) {
+      const reactionsResult = await pool.query(
+        `SELECT emoji, COUNT(*) as count,
+                array_agg(json_build_object('user_id', user_id)) as users
+         FROM reactions
+         WHERE message_id = $1
+         GROUP BY emoji`,
+        [message.id]
+      );
+      message.reactions = reactionsResult.rows;
+    }
+
+    res.json(messages);
   } catch (error) {
     console.error('Error fetching messages:', error);
     res.status(500).json({ error: 'Server error' });
