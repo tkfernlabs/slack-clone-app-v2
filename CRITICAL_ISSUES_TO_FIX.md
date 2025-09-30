@@ -354,19 +354,19 @@ Messages show a "?" placeholder instead of user avatars. Avatar functionality no
 
 ## Issue 13: Emoji Reactions Not Working 🎭 MEDIUM
 **Severity**: MEDIUM - Feature advertised but broken
-**Status**: NOT TESTED
+**Status**: ❌ TESTED - NOT WORKING
 
 ### Description
-Emoji reaction button visible on messages but functionality not tested/verified.
+Emoji reaction button visible on messages but reactions don't display after being added.
 
-### Needs Testing
-- Can users add reactions?
-- Do reactions display correctly?
-- Do reactions persist after page refresh?
-- Does reaction count update in real-time?
+### Testing Results
+- ✅ Reaction picker appears when clicking emoji button
+- ✅ Can click on emoji options
+- ❌ Reactions don't display on messages after clicking
+- ❌ Likely missing API integration or frontend state update
 
 ### Priority
-**MEDIUM** - If visible, should work
+**MEDIUM** - If visible, should work (but not critical for MVP)
 
 ---
 
@@ -604,25 +604,27 @@ From Vite docs: "vite preview is intended for previewing the build locally and n
 
 ---
 
-## Issue 22: Environment Variables Hardcoded/Exposed ⚠️ HIGH
+## Issue 22: Environment Variables Hardcoded/Exposed ✅ VERIFIED SECURE
 **Severity**: HIGH - Security/Configuration concern
-**Status**: NEEDS REVIEW
+**Status**: ✅ REVIEWED AND SECURE
 
 ### Description
-Need to verify that sensitive configuration is properly handled.
+Verified that sensitive configuration is properly handled.
 
-### Items to Check
-- Are API URLs properly using environment variables?
-- Is JWT_SECRET exposed anywhere in frontend?
-- Are database credentials secure?
-- Are there any API keys in frontend code?
+### Items Checked
+- ✅ API URLs properly using environment variables (VITE_API_URL)
+- ✅ JWT_SECRET NOT exposed in frontend code  
+- ✅ Database credentials secure in backend .env file
+- ✅ No API keys hardcoded in frontend code
+- ✅ Backend .env file in .gitignore
 
-### Current Known Issues
-- Frontend uses `VITE_API_URL` - verify this is set correctly
-- Backend uses `.env` file - verify it's in `.gitignore`
+### Current Setup
+- Frontend uses `VITE_API_URL` and `VITE_WS_URL` environment variables
+- Backend uses `.env` file for sensitive data (DATABASE_URL, JWT_SECRET)
+- All sensitive data properly isolated to backend
 
 ### Priority
-**HIGH** - Security concern
+**HIGH** - Security verified
 
 ---
 
