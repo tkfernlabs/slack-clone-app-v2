@@ -98,8 +98,8 @@ class SocketService {
     this.emit('send_message', { channelId, content, parentMessageId });
   }
 
-  sendDirectMessage(recipientId, content) {
-    this.emit('send_direct_message', { recipientId, content });
+  sendDirectMessage(data) {
+    this.emit('send_direct_message', data);
   }
 
   typing(channelId) {

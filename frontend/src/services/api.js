@@ -73,10 +73,19 @@ export const messageAPI = {
 
 // Direct Message APIs
 export const dmAPI = {
-  send: (recipientId, data) => api.post(`/api/direct-messages/${recipientId}`, data),
+  send: (data) => api.post('/api/direct-messages', data),
   getConversations: () => api.get('/api/direct-messages/conversations'),
   getMessages: (userId, page = 1, limit = 50) => 
-    api.get(`/api/direct-messages/${userId}?page=${page}&limit=${limit}`),
+    api.get(`/api/direct-messages/user/${userId}?page=${page}&limit=${limit}`),
+  update: (messageId, data) => api.put(`/api/direct-messages/${messageId}`, data),
+  delete: (messageId) => api.delete(`/api/direct-messages/${messageId}`),
+};
+
+// Users API (for finding users to DM)
+export const usersAPI = {
+  getAll: () => api.get('/api/users'),
+  getById: (userId) => api.get(`/api/users/${userId}`),
+  search: (query) => api.get(`/api/users/search?q=${query}`),
 };
 
 export default api;

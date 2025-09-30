@@ -199,12 +199,46 @@ router.post('/:id/reactions',
     }
 
     try {
+      // Get message info including channel_id
+      const messageResult = await pool.query(
+        'SELECT channel_id FROM messages WHERE id = $1',
+        [req.params.id]
+      );
+
+      if (messageResult.rows.length === 0) {
+        return res.status(404).json({ error: 'Message not found' });
+      }
+
+      const channelId = messageResult.rows[0].channel_id;
+
+      // Add reaction
       await pool.query(
         'INSERT INTO reactions (message_id, user_id, emoji) VALUES ($1, $2, $3) ON CONFLICT (message_id, user_id, emoji) DO NOTHING',
         [req.params.id, req.user.userId, req.body.emoji]
       );
 
-      res.json({ message: 'Reaction added successfully' });
+      // Get updated reactions for this message
+      const reactionsResult = await pool.query(
+        `SELECT r.emoji, COUNT(*) as count
+         FROM reactions r
+         WHERE r.message_id = $1
+         GROUP BY r.emoji`,
+        [req.params.id]
+      );
+
+      const reactionData = {
+        messageId: parseInt(req.params.id),
+        channelId: channelId,
+        reactions: reactionsResult.rows
+      };
+
+      // Emit WebSocket event for real-time updates
+      if (req.io) {
+        console.log(`Emitting new_reaction to channel_${channelId}:`, reactionData);
+        req.io.to(`channel_${channelId}`).emit('new_reaction', reactionData);
+      }
+
+      res.json({ message: 'Reaction added successfully', reactions: reactionsResult.rows });
     } catch (error) {
       console.error('Error adding reaction:', error);
       res.status(500).json({ error: 'Server error' });

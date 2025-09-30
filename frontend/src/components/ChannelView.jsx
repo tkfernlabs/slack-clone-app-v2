@@ -19,9 +19,13 @@ const ChannelView = ({ channel }) => {
 
       // Listen for new messages
       socketService.on('new_message', handleNewMessage);
+      
+      // Listen for new reactions
+      socketService.on('new_reaction', handleNewReaction);
 
       return () => {
         socketService.off('new_message', handleNewMessage);
+        socketService.off('new_reaction', handleNewReaction);
         socketService.leaveChannel(channel.id);
       };
     }
@@ -60,6 +64,23 @@ const ChannelView = ({ channel }) => {
         return [...prev, message];
       });
     }
+  };
+
+  const handleNewReaction = (reactionData) => {
+    console.log('Received new reaction via WebSocket:', reactionData);
+    
+    // Update the message with the new reactions
+    setMessages((prev) => {
+      return prev.map(msg => {
+        if (msg.id === reactionData.messageId) {
+          return {
+            ...msg,
+            reactions: reactionData.reactions
+          };
+        }
+        return msg;
+      });
+    });
   };
 
   const scrollToBottom = () => {
@@ -103,11 +124,12 @@ const ChannelView = ({ channel }) => {
 
   const handleReaction = async (messageId, emoji) => {
     try {
-      await messageAPI.addReaction(messageId, emoji);
-      // Reload messages to get updated reactions
-      loadMessages();
+      const response = await messageAPI.addReaction(messageId, emoji);
+      console.log('Reaction added successfully:', response.data);
+      // No need to reload - the WebSocket event will update the UI
     } catch (error) {
       console.error('Failed to add reaction:', error);
+      alert('Failed to add reaction. Please try again.');
     }
   };
 

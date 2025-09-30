@@ -3,6 +3,25 @@ const router = express.Router();
 const pool = require('../config/database');
 const { authenticateToken } = require('../middleware/auth');
 
+// Get all users (for starting DMs)
+router.get('/', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT id, username, display_name, avatar_url, status
+       FROM users
+       WHERE id != $1
+       ORDER BY display_name, username
+       LIMIT 100`,
+      [req.user.userId]
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Get current user profile
 router.get('/me', authenticateToken, async (req, res) => {
   try {
