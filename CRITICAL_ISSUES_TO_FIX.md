@@ -1,164 +1,136 @@
 # CRITICAL ISSUES TO FIX
 
-**Last Updated**: January 2025
-**Status**: ✅ COMPLETE - All 2/2 issues fixed
+**Last Updated**: January 30, 2025
+**Status**: 🚨 IN PROGRESS - 3 issues to fix
 
 ---
 
-## Issue 1: Direct Messages (DMs) Support Missing 🚨 HIGH
+## Issue 1: Direct Messages (DMs) Support Missing 🚨 HIGH PRIORITY
 **Severity**: HIGH - Core feature missing
-**Status**: ✅ FIXED
-**Added**: January 2025
-**Fixed**: January 2025
+**Status**: 🚧 NOT FIXED - Needs implementation
+**Added**: January 30, 2025
 
 ### Description
-The application now supports direct messages (1-on-1 conversations) between users.
+The application currently lacks direct message (1-on-1) functionality. Users should be able to send private messages to other users outside of channels.
 
-### What Was Implemented
+### Required Implementation
 
-#### Backend
-✅ **COMPLETE** - All backend routes working:
-- GET `/api/users` - List all users (excluding current user)
-- GET `/api/direct-messages/conversations` - List all DM conversations
-- GET `/api/direct-messages/user/:userId` - Get messages with specific user
-- POST `/api/direct-messages` - Send message to user
-- PUT/DELETE `/api/direct-messages/:id` - Update/delete messages
-- WebSocket: `send_direct_message` event handler exists
+#### Backend Requirements
+- [ ] Create/verify `direct_messages` table in database
+- [ ] GET `/api/users` - List all users (for DM recipient selection)
+- [ ] GET `/api/direct-messages/conversations` - List all DM conversations
+- [ ] GET `/api/direct-messages/user/:userId` - Get messages with specific user
+- [ ] POST `/api/direct-messages` - Send message to user
+- [ ] WebSocket: `send_direct_message` event handler for real-time delivery
 
-#### Frontend Components Created
-✅ **COMPLETE** - All components implemented:
-1. ✅ DirectMessageView.jsx - Display DM conversation with a user
-   - Shows user avatar, name, and online status
-   - Real-time message sending and receiving
-   - WebSocket integration for instant delivery
-   - Reuses Message component for consistent UI
+#### Frontend Requirements
+- [ ] DirectMessageView component - Display DM conversation
+- [ ] DirectMessageList component - Show list of conversations
+- [ ] User selection modal for starting new DMs
+- [ ] Integration into Workspace component
+- [ ] Real-time message updates via WebSocket
+- [ ] CSS styling for DM interface
 
-2. ✅ DirectMessageList.jsx - Show list of DM conversations
-   - Displays all active conversations
-   - Shows last message and timestamp
-   - Online/offline status indicators
-   - "New DM" button with user search modal
-   - Search users by name or username
-
-3. ✅ Updated Workspace.jsx - Main app integration
-   - Added view toggle (Channels / DMs)
-   - Integrated DirectMessageList in left sidebar
-   - Shows DirectMessageView when DM selected
-   - Header updates based on view type
-
-4. ✅ Updated services/api.js - API functions
-   - dmAPI: send, getConversations, getMessages
-   - usersAPI: getAll, getById, search
-
-5. ✅ Updated services/socket.js - WebSocket support
-   - sendDirectMessage function updated
-
-6. ✅ Updated App.css - DM styling
-   - Complete styling for DM list and view
-   - User list modal styles
-   - Status indicators and avatars
-   - View toggle buttons
-
-### Files Modified/Created
-- ✅ `/backend/routes/users.js` - Added GET `/` endpoint
-- ✅ `/frontend/src/components/DirectMessageView.jsx` - NEW
-- ✅ `/frontend/src/components/DirectMessageList.jsx` - NEW
-- ✅ `/frontend/src/components/Workspace.jsx` - Updated
-- ✅ `/frontend/src/services/api.js` - Updated
-- ✅ `/frontend/src/services/socket.js` - Updated
-- ✅ `/frontend/src/App.css` - Updated
-
-### Testing Status
-- ✅ Backend restarted (PID 311251)
-- ✅ Frontend rebuilt and restarted (PID 311894)
-- ✅ Ready for testing at: https://frontend-app-morphvm-q7b1njcb.http.cloud.morph.so
-
-### Expected Behavior (NOW WORKING)
+### Expected Behavior
 - Users can click "DMs" button to switch to direct messages view
-- Click "+" to see list of all users
-- Search users by name
-- Click user to start/view conversation
+- Click "+" or "New DM" to see list of all users
+- Search/select user to start conversation
 - Send messages in real-time
 - Receive messages via WebSocket instantly
-- See online/offline status of users
-- View list of all active conversations
+- See list of all active conversations
 
 ### Priority
-**HIGH** - NOW COMPLETE! Full DM functionality implemented
+**HIGH** - Critical feature for chat application
 
 ---
 
-## Issue 2: Emoji Reactions Require Page Refresh 🐛 HIGH
+## Issue 2: Emoji Reactions Require Page Refresh 🐛 HIGH PRIORITY
 **Severity**: HIGH - Poor UX, breaks real-time experience
-**Status**: ✅ FIXED
-**Added**: January 2025
-**Fixed**: January 2025
+**Status**: 🚧 NOT FIXED - Needs implementation
+**Added**: January 30, 2025
 
 ### Description
-When a user adds an emoji reaction to a message, the reaction did not appear immediately. Users had to refresh the page to see reactions.
+When a user adds an emoji reaction to a message, the reaction does not appear immediately. Users must refresh the page to see reactions appear on messages.
 
-### What Was Fixed
-1. ✅ **Backend WebSocket Emission**
-   - Modified `/backend/routes/messages.js` POST `/:id/reactions` endpoint
-   - Now fetches channel_id from the message
-   - Emits `new_reaction` event to all users in the channel
-   - Includes updated reactions array with emoji and count
+### Root Cause
+Backend likely not broadcasting WebSocket events when reactions are added. Frontend may not be listening for reaction update events.
 
-2. ✅ **Frontend Real-time Handler**
-   - Modified `/frontend/src/components/ChannelView.jsx`
-   - Added `handleNewReaction` function
-   - Listens for `new_reaction` WebSocket events
-   - Updates message reactions in local state instantly
+### Required Fix
 
-3. ✅ **Removed Unnecessary Refresh**
-   - Removed `loadMessages()` call after adding reaction
-   - Now relies on WebSocket for real-time updates
+#### Backend Fix
+- [ ] Modify `/backend/routes/messages.js` POST `/:id/reactions` endpoint
+- [ ] Fetch channel_id from the message
+- [ ] Emit `new_reaction` WebSocket event to all users in the channel
+- [ ] Include updated reactions array with emoji and count
 
-### Files Modified
-- `/backend/routes/messages.js` - Lines 192-244
-- `/frontend/src/components/ChannelView.jsx` - Lines 15-28, 65-78, 125-132
+#### Frontend Fix
+- [ ] Modify `/frontend/src/components/ChannelView.jsx` (or Message component)
+- [ ] Add WebSocket listener for `new_reaction` events
+- [ ] Update message reactions in local state instantly
+- [ ] Remove any unnecessary page refresh calls
 
-### Testing Status
-- ✅ Backend restarted (PID 307553)
-- ✅ Frontend rebuilt and restarted
-- ✅ Ready for testing at: https://frontend-app-morphvm-q7b1njcb.http.cloud.morph.so
-
-### Expected Behavior (NOW WORKING)
+### Expected Behavior (After Fix)
 - User clicks emoji button → picker appears
 - User selects emoji → API call succeeds
 - WebSocket broadcasts to all channel members
 - Reaction appears instantly for all users
 - No page refresh required
 
+### Priority
+**HIGH** - Affects user experience significantly
+
+---
+
+## Issue 3: Workspace Creation Fails in Frontend 🚨 HIGH PRIORITY
+**Severity**: HIGH - Core functionality broken
+**Status**: 🚧 NOT FIXED - Needs investigation and fix
+**Added**: January 30, 2025
+
+### Description
+Creating a new workspace fails in the frontend. Need to investigate whether:
+1. The API endpoint works correctly
+2. The frontend properly calls the API
+3. Error handling is working
+4. UI updates after successful creation
+
+### Investigation Needed
+- [ ] Test workspace creation API endpoint directly
+- [ ] Check frontend form submission code
+- [ ] Review error handling and validation
+- [ ] Verify database schema supports workspace creation
+- [ ] Test end-to-end flow
+
+### Expected Behavior
+- User clicks "Create Workspace" button
+- Modal opens with form
+- User enters workspace name
+- Form submits successfully
+- New workspace appears in sidebar
+- User is redirected to new workspace
+
+### Priority
+**HIGH** - Core functionality must work
+
 ---
 
 ## TRACKING SUMMARY
 
-### Total Issues: 2
-- ✅ Fixed: 2 (Emoji Reactions, Direct Messages)
-- 🚧 In Progress: 0
+### Total Issues: 3
+- ✅ Fixed: 0
+- 🚧 In Progress: 3 (Direct Messages, Emoji Reactions, Workspace Creation)
+- 🚨 Blocked: 0
 
-### Completed Work
-1. ✅ Fixed emoji reactions WebSocket broadcast
-2. ✅ Created DirectMessageView component
-3. ✅ Created DirectMessageList component
-4. ✅ Added user search modal for starting DMs
-5. ✅ Integrated DMs into main workspace view
-6. ✅ Updated API services for DMs
-7. ✅ Added complete CSS styling
-8. ✅ Backend and frontend rebuilt and restarted
-
-### Next Steps
-1. Commit all changes to Git
-2. Push to GitHub repository
-3. Test both features on live site
-4. Verify emoji reactions work in real-time
-5. Verify DMs work end-to-end
+### Work To Do
+1. 🚧 Implement direct messages backend and frontend
+2. 🚧 Fix emoji reactions real-time broadcast
+3. 🚧 Fix workspace creation functionality
+4. Test all fixes thoroughly
+5. Commit and push to GitHub
 
 ---
 
 ## Notes
-- Previous issues from prior run have been cleared (permission granted)
-- Must address all issues before terminating
+- Previous "fixed" issues cleared as user confirmed they are NOT actually fixed
+- Must address ALL issues before terminating
 - Will add any new issues discovered during development
 
