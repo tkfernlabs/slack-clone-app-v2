@@ -34,6 +34,7 @@ Likely a frontend routing or state management issue after successful API respons
 ## Issue 2: Messages Not Displaying After Being Sent ✅ FIXED
 **Severity**: HIGH - Core functionality appears broken
 **Status**: ✅ FIXED (2025-09-30)
+**Tested**: ✅ CONFIRMED WORKING - Messages appear instantly without refresh
 
 ### Description
 When a user sends a message, the input field clears (indicating the message was sent), but the message does not appear in the channel view. Only after refreshing the page do messages appear.
@@ -71,7 +72,8 @@ When a user sends a message, the input field clears (indicating the message was 
 ## Issue 3: "Unknown User" Displayed on Messages ✅ FIXED
 **Severity**: HIGH - Poor user experience
 **Status**: ✅ FIXED (2025-09-30)
-**Resolution**: Message component updated to handle both flat and nested user data structures
+**Tested**: ✅ CONFIRMED WORKING - User display names showing correctly ("John Smith")
+**Resolution**: Message component updated to handle both flat and nested user data structures from backend
 
 ### Description
 All messages in channels display "Unknown User" instead of the actual username or display name.
@@ -105,6 +107,7 @@ Frontend Message component is not correctly reading user data from the message o
 ## Issue 4: "Invalid Date" Displayed on Messages ✅ FIXED
 **Severity**: HIGH - Poor user experience
 **Status**: ✅ FIXED (2025-09-30)
+**Tested**: ✅ CONFIRMED WORKING - Timestamps displaying correctly (e.g., "01:07 AM")
 **Resolution**: formatTime function updated to handle both snake_case and camelCase timestamps with proper error handling
 
 ### Description
@@ -194,7 +197,8 @@ Update CORS configuration in `backend/server.js` to explicitly list Authorizatio
 ## Issue 7: WebSocket Not Broadcasting Messages ✅ FIXED
 **Severity**: HIGH - Real-time functionality broken
 **Status**: ✅ FIXED (2025-09-30)
-**Resolution**: Backend message creation endpoint now broadcasts via WebSocket when messages are created
+**Tested**: ✅ CONFIRMED WORKING - Real-time message broadcasting functional
+**Resolution**: Added WebSocket emission in channels.js POST /:id/messages endpoint. Backend now broadcasts via WebSocket when messages are created. Middleware added to attach io object to all requests.
 
 ### Description
 Messages sent via the frontend do not appear in real-time. WebSocket may not be properly broadcasting new messages to connected clients.

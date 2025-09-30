@@ -233,6 +233,14 @@ router.post('/:id/messages',
         reply_count: 0
       };
 
+      // Emit WebSocket event for real-time updates
+      if (req.io) {
+        console.log(`Emitting new_message to channel_${req.params.id}:`, message);
+        req.io.to(`channel_${req.params.id}`).emit('new_message', message);
+      } else {
+        console.error('Socket.io not available in request object');
+      }
+
       res.status(201).json(message);
     } catch (error) {
       console.error('Error sending message:', error);

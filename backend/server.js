@@ -30,8 +30,11 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Make io available to routes
-app.set('io', io);
+// Make io available to all routes via middleware
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
 
 // Routes
 app.use('/api/auth', authRoutes);

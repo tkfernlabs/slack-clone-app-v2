@@ -56,6 +56,10 @@ router.post('/',
     body('threadId').optional().isInt()
   ],
   async (req, res) => {
+    console.log('=== CREATE MESSAGE ROUTE CALLED ===');
+    console.log('req.io exists?', !!req.io);
+    console.log('req.app.get("io") exists?', !!req.app.get('io'));
+    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -94,9 +98,11 @@ router.post('/',
       };
 
       // Emit WebSocket event for real-time updates
-      const io = req.app.get('io');
-      if (io) {
-        io.to(`channel_${channelId}`).emit('new_message', messageWithUser);
+      if (req.io) {
+        console.log(`Emitting new_message to channel_${channelId}:`, messageWithUser);
+        req.io.to(`channel_${channelId}`).emit('new_message', messageWithUser);
+      } else {
+        console.error('Socket.io not available in request object');
       }
 
       res.status(201).json(messageWithUser);
