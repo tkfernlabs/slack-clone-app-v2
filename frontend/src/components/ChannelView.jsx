@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { messageAPI } from '../services/api';
 import socketService from '../services/socket';
 import { useAuth } from '../contexts/AuthContext';
-import Message from './Message';
+import Message from './MessageNew';
 
 const ChannelView = ({ channel }) => {
   const { user } = useAuth();
