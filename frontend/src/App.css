@@ -741,8 +741,10 @@ body {
 /* DM List Styles */
 .dm-list {
   flex: 1;
+  min-height: 200px;
   overflow-y: auto;
   background-color: var(--sidebar-bg);
+  padding: 0.5rem 0;
 }
 
 .dm-list-header {
