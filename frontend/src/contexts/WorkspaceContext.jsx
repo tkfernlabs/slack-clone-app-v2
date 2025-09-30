@@ -66,9 +66,19 @@ export const WorkspaceProvider = ({ children }) => {
   const createWorkspace = async (workspaceData) => {
     try {
       const response = await workspaceAPI.create(workspaceData);
-      setWorkspaces([...workspaces, response.data]);
-      setCurrentWorkspace(response.data);
-      return { success: true, workspace: response.data };
+      // Backend returns { workspace, defaultChannel }
+      const { workspace, defaultChannel } = response.data;
+      
+      setWorkspaces([...workspaces, workspace]);
+      setCurrentWorkspace(workspace);
+      
+      // If a default channel was created, set it as current and add to channels
+      if (defaultChannel) {
+        setChannels([defaultChannel]);
+        setCurrentChannel(defaultChannel);
+      }
+      
+      return { success: true, workspace, defaultChannel };
     } catch (error) {
       return { 
         success: false, 
