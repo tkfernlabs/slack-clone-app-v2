@@ -2,14 +2,35 @@ import React, { useState } from 'react';
 
 const Message = ({ message, currentUser, onReaction }) => {
   const [showReactions, setShowReactions] = useState(false);
-  const isOwnMessage = message.userId === currentUser?.id;
+  
+  // Support both camelCase (userId) and snake_case (user_id) from backend
+  const messageUserId = message.userId || message.user_id;
+  const isOwnMessage = messageUserId === currentUser?.id;
 
   const formatTime = (timestamp) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
+    // Support both camelCase (createdAt) and snake_case (created_at)
+    const timeValue = timestamp || message.created_at || message.createdAt;
+    
+    if (!timeValue) {
+      return 'Just now';
+    }
+    
+    try {
+      const date = new Date(timeValue);
+      
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        return 'Just now';
+      }
+      
+      return date.toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+    } catch (error) {
+      console.error('Error formatting time:', error);
+      return 'Just now';
+    }
   };
 
   const commonEmojis = ['👍', '❤️', '😊', '🎉', '🚀', '👀'];
@@ -19,18 +40,36 @@ const Message = ({ message, currentUser, onReaction }) => {
     setShowReactions(false);
   };
 
+  // Get user info - support both nested user object and flat structure
+  const getUserDisplayName = () => {
+    // First try nested user object (message.user)
+    if (message.user?.fullName) return message.user.fullName;
+    if (message.user?.display_name) return message.user.display_name;
+    if (message.user?.username) return message.user.username;
+    
+    // Then try flat structure from backend
+    if (message.display_name) return message.display_name;
+    if (message.username) return message.username;
+    
+    return 'Unknown User';
+  };
+
+  const getUserInitial = () => {
+    const displayName = getUserDisplayName();
+    return displayName.charAt(0).toUpperCase();
+  };
+
   return (
     <div className={`message ${isOwnMessage ? 'own-message' : ''}`}>
       <div className="message-avatar">
-        {message.user?.fullName?.charAt(0).toUpperCase() || 
-         message.user?.username?.charAt(0).toUpperCase() || '?'}
+        {getUserInitial()}
       </div>
       <div className="message-content">
         <div className="message-header">
           <span className="message-author">
-            {message.user?.fullName || message.user?.username || 'Unknown User'}
+            {getUserDisplayName()}
           </span>
-          <span className="message-time">{formatTime(message.createdAt)}</span>
+          <span className="message-time">{formatTime(message.created_at || message.createdAt)}</span>
         </div>
         <div className="message-text">{message.content}</div>
         

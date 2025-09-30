@@ -31,9 +31,9 @@ Likely a frontend routing or state management issue after successful API respons
 
 ---
 
-## Issue 2: Messages Not Displaying After Being Sent ❌ CRITICAL
+## Issue 2: Messages Not Displaying After Being Sent ✅ FIXED
 **Severity**: HIGH - Core functionality appears broken
-**Status**: PARTIALLY FIXED
+**Status**: ✅ FIXED (2025-09-30)
 
 ### Description
 When a user sends a message, the input field clears (indicating the message was sent), but the message does not appear in the channel view. Only after refreshing the page do messages appear.
@@ -51,11 +51,12 @@ When a user sends a message, the input field clears (indicating the message was 
 - ✅ Database column names corrected (thread_id vs parent_id)
 - ✅ Messages can be retrieved via API
 
-### What's Still Broken
-- ❌ Real-time message display not working
-- ❌ Message does not appear immediately after sending
-- ❌ Possible WebSocket integration issues
-- ❌ Frontend may not be refreshing message list after POST
+### What Was Fixed (Round 2)
+- ✅ Backend now emits WebSocket events when messages are created via API
+- ✅ Frontend Message component now handles both snake_case and camelCase field names
+- ✅ Duplicate message sending removed (now only uses API, WebSocket broadcasts automatically)
+- ✅ Real-time message display now working
+- ✅ Messages appear immediately after sending via WebSocket broadcast
 
 ### Expected Behavior
 - Message should appear immediately after clicking Send
@@ -67,10 +68,10 @@ When a user sends a message, the input field clears (indicating the message was 
 
 ---
 
-## Issue 3: "Unknown User" Displayed on Messages ⚠️ HIGH
+## Issue 3: "Unknown User" Displayed on Messages ✅ FIXED
 **Severity**: HIGH - Poor user experience
-**Status**: NOT FIXED
-**Observed**: All messages show "Unknown User"
+**Status**: ✅ FIXED (2025-09-30)
+**Resolution**: Message component updated to handle both flat and nested user data structures
 
 ### Description
 All messages in channels display "Unknown User" instead of the actual username or display name.
@@ -101,10 +102,10 @@ Frontend Message component is not correctly reading user data from the message o
 
 ---
 
-## Issue 4: "Invalid Date" Displayed on Messages ⚠️ HIGH
+## Issue 4: "Invalid Date" Displayed on Messages ✅ FIXED
 **Severity**: HIGH - Poor user experience
-**Status**: NOT FIXED
-**Observed**: All messages show "Invalid Date"
+**Status**: ✅ FIXED (2025-09-30)
+**Resolution**: formatTime function updated to handle both snake_case and camelCase timestamps with proper error handling
 
 ### Description
 All messages show "Invalid Date" instead of the actual timestamp (e.g., "2:45 PM" or "5 minutes ago").
@@ -163,9 +164,10 @@ npm run preview
 
 ---
 
-## Issue 6: CORS Warnings in Console ⚠️ MEDIUM
+## Issue 6: CORS Warnings in Console ✅ FIXED
 **Severity**: MEDIUM - Not blocking but indicates configuration issues
-**Status**: PARTIALLY ADDRESSED
+**Status**: ✅ FIXED (Previously)
+**Resolution**: Authorization header explicitly listed in CORS configuration
 
 ### Description
 Browser console shows multiple CORS warnings:
@@ -189,9 +191,10 @@ Update CORS configuration in `backend/server.js` to explicitly list Authorizatio
 
 ---
 
-## Issue 7: WebSocket Not Broadcasting Messages ⚠️ HIGH
+## Issue 7: WebSocket Not Broadcasting Messages ✅ FIXED
 **Severity**: HIGH - Real-time functionality broken
-**Status**: NOT VERIFIED
+**Status**: ✅ FIXED (2025-09-30)
+**Resolution**: Backend message creation endpoint now broadcasts via WebSocket when messages are created
 
 ### Description
 Messages sent via the frontend do not appear in real-time. WebSocket may not be properly broadcasting new messages to connected clients.
@@ -218,9 +221,10 @@ Messages sent via the frontend do not appear in real-time. WebSocket may not be 
 
 ---
 
-## Issue 8: Message Component Not Receiving User Data Correctly 🐛 MEDIUM
+## Issue 8: Message Component Not Receiving User Data Correctly ✅ FIXED
 **Severity**: MEDIUM - Display issue
-**Status**: ROOT CAUSE IDENTIFIED
+**Status**: ✅ FIXED (2025-09-30)
+**Resolution**: Fixed along with Issues #3 and #4
 
 ### Description
 The Message component is not correctly extracting and displaying user information from the message object.

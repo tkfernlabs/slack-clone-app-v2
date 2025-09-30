@@ -45,8 +45,13 @@ const ChannelView = ({ channel }) => {
   };
 
   const handleNewMessage = (message) => {
+    console.log('Received new message via WebSocket:', message);
+    
+    // Support both camelCase (channelId) and snake_case (channel_id)
+    const messageChannelId = message.channelId || message.channel_id;
+    
     // Only add if it's for the current channel
-    if (message.channelId === channel.id) {
+    if (messageChannelId === channel.id) {
       setMessages((prev) => {
         // Check if message already exists
         if (prev.find(m => m.id === message.id)) {
@@ -69,13 +74,14 @@ const ChannelView = ({ channel }) => {
     setSending(true);
     
     try {
-      // Send via WebSocket for real-time delivery
-      socketService.sendMessage(channel.id, newMessage.trim());
+      // Send via API - backend will broadcast via WebSocket
+      const response = await messageAPI.send(channel.id, { content: newMessage.trim() });
       
-      // Also send via API for persistence
-      await messageAPI.send(channel.id, { content: newMessage.trim() });
+      console.log('Message sent successfully:', response.data);
       
       setNewMessage('');
+      
+      // Message will appear via WebSocket 'new_message' event
     } catch (error) {
       console.error('Failed to send message:', error);
       alert('Failed to send message. Please try again.');

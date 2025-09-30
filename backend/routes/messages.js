@@ -88,10 +88,18 @@ router.post('/',
         [req.user.userId]
       );
 
-      res.status(201).json({
+      const messageWithUser = {
         ...message,
         ...userResult.rows[0]
-      });
+      };
+
+      // Emit WebSocket event for real-time updates
+      const io = req.app.get('io');
+      if (io) {
+        io.to(`channel_${channelId}`).emit('new_message', messageWithUser);
+      }
+
+      res.status(201).json(messageWithUser);
     } catch (error) {
       console.error('Error creating message:', error);
       res.status(500).json({ error: 'Server error' });

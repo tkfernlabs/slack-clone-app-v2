@@ -23,7 +23,7 @@ class SocketService {
     this.socket.on('connect', () => {
       console.log('Socket connected:', this.socket.id);
       if (token) {
-        this.socket.emit('authenticate', { token });
+        this.socket.emit('authenticate', token);
       }
     });
 
@@ -85,11 +85,13 @@ class SocketService {
   }
 
   joinChannel(channelId) {
-    this.emit('join_channel', { channelId });
+    console.log('Joining channel:', channelId);
+    this.emit('join_channel', channelId);
   }
 
   leaveChannel(channelId) {
-    this.emit('leave_channel', { channelId });
+    console.log('Leaving channel:', channelId);
+    this.emit('leave_channel', channelId);
   }
 
   sendMessage(channelId, content, parentMessageId = null) {
