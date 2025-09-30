@@ -481,26 +481,33 @@ Database has `thread_id` field suggesting threading support, but no UI for creat
 
 ---
 
-## Issue 16: Direct Messages Not Tested 💬 MEDIUM
-**Severity**: MEDIUM - Core feature untested
-**Status**: NOT TESTED
+## Issue 16: Direct Messages Not Implemented in Frontend ⚠️ MEDIUM
+**Severity**: MEDIUM - Feature missing from UI
+**Status**: ❌ FRONTEND UI NOT IMPLEMENTED
 
 ### Description
-Direct message functionality exists in backend but has never been tested in this session.
+Direct message functionality exists in backend but NO UI components exist in frontend.
 
-### Backend Routes Available
-- POST `/api/direct-messages/:userId`
-- GET `/api/direct-messages/conversations`
-- GET `/api/direct-messages/:userId`
+### Backend Status
+- ✅ POST `/api/direct-messages/:userId` - Implemented
+- ✅ GET `/api/direct-messages/conversations` - Implemented  
+- ✅ GET `/api/direct-messages/:userId` - Implemented
 
-### Needs Testing
-- Can users start DM conversations?
-- Do DMs appear in UI?
-- Is there a DM list?
-- Do DMs work in real-time?
+### Frontend Status
+- ❌ No DM UI components found
+- ❌ No DM list sidebar
+- ❌ No DM conversation view
+- ❌ Cannot test without UI
+
+### What's Needed
+- Create DirectMessages component
+- Add DM list to sidebar
+- Implement DM conversation view
+- Wire up to backend APIs
+- Add WebSocket support for real-time DMs
 
 ### Priority
-**MEDIUM** - Core Slack feature
+**MEDIUM** - Core Slack feature but requires significant frontend work
 
 ---
 
@@ -544,21 +551,32 @@ No notifications for:
 
 ---
 
-## Issue 19: Mobile Responsiveness Not Tested 📱 MEDIUM
+## Issue 19: Mobile Responsiveness Partially Working 📱 MEDIUM
 **Severity**: MEDIUM - Important for real-world use
-**Status**: NOT TESTED
+**Status**: ⚠️ TESTED - PARTIALLY WORKING
 
 ### Description
-Application tested only on desktop browser. Mobile experience unknown.
+Application tested on mobile viewport (320x480). Some responsive behavior but critical UX issues.
 
-### Needs Testing
-- Does it work on mobile browsers?
-- Is the UI responsive?
-- Are touch interactions working?
-- Is text readable on small screens?
+### Test Results
+- ✅ Messages display correctly on mobile
+- ✅ Message input field works
+- ✅ Text is readable on small screens
+- ✅ Reactions display properly
+- ❌ **CRITICAL**: Sidebar hidden on mobile with NO way to access it
+- ❌ No hamburger menu or navigation toggle
+- ❌ Cannot switch between channels or workspaces on mobile
+- ❌ Cannot access channel list on mobile
+
+### What's Needed
+- Add hamburger menu button for mobile
+- Make sidebar slide-in/slide-out on mobile
+- Add mobile navigation for channel/workspace switching
+- Test touch interactions for emoji reactions
+- Optimize spacing and sizing for mobile
 
 ### Priority
-**MEDIUM** - Many users will access from mobile
+**MEDIUM** - Works for viewing but can't navigate between channels
 
 ---
 
