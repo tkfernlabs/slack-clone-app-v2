@@ -1,7 +1,9 @@
 import React from 'react';
 import { useWorkspace } from '../contexts/WorkspaceContext';
+import { useAuth } from '../contexts/AuthContext';
 
-const Sidebar = ({ onCreateWorkspace, onCreateChannel }) => {
+const Sidebar = ({ onCreateWorkspace, onCreateChannel, activeView }) => {
+  const { user } = useAuth();
   const {
     workspaces,
     currentWorkspace,
@@ -11,67 +13,94 @@ const Sidebar = ({ onCreateWorkspace, onCreateChannel }) => {
     selectChannel,
   } = useWorkspace();
 
+  const getWorkspaceInitial = (name) => {
+    return name ? name.charAt(0).toUpperCase() : 'W';
+  };
+
   return (
-    <div className="sidebar">
-      <div className="sidebar-section">
-        <div className="section-header">
-          <h3>Workspaces</h3>
+    <>
+      {/* Workspace Header */}
+      <div className="workspace-info" onClick={onCreateWorkspace}>
+        <div className="workspace-name">
+          {currentWorkspace?.name || 'Select Workspace'}
+        </div>
+        <div className="workspace-user">
+          {user?.display_name || user?.fullName || user?.username}
+        </div>
+      </div>
+
+      {/* Workspaces Section */}
+      <div className="workspaces-section">
+        <div className="workspaces-header">
+          <span>Workspaces</span>
           <button 
-            className="btn-icon" 
-            onClick={onCreateWorkspace}
+            className="sidebar-add-btn" 
+            onClick={(e) => {
+              e.stopPropagation();
+              onCreateWorkspace();
+            }}
             title="Create workspace"
           >
             +
           </button>
         </div>
-        <div className="workspace-list">
+        <ul className="workspace-list">
           {workspaces.map((workspace) => (
-            <div
+            <li
               key={workspace.id}
               className={`workspace-item ${currentWorkspace?.id === workspace.id ? 'active' : ''}`}
               onClick={() => selectWorkspace(workspace)}
             >
               <div className="workspace-avatar">
-                {workspace.name.charAt(0).toUpperCase()}
+                {getWorkspaceInitial(workspace.name)}
               </div>
-              <span className="workspace-name">{workspace.name}</span>
-            </div>
+              <div className="workspace-details">
+                <div className="workspace-item-name">{workspace.name}</div>
+              </div>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
 
+      {/* Channels Section */}
       {currentWorkspace && (
         <div className="sidebar-section">
-          <div className="section-header">
-            <h3>Channels</h3>
+          <div className="sidebar-section-header">
+            <div className="sidebar-section-title">
+              Channels
+            </div>
             <button 
-              className="btn-icon" 
-              onClick={onCreateChannel}
+              className="sidebar-add-btn" 
+              onClick={(e) => {
+                e.stopPropagation();
+                onCreateChannel();
+              }}
               title="Create channel"
             >
               +
             </button>
           </div>
-          <div className="channel-list">
+          <ul className="channels-list">
             {channels.length === 0 ? (
-              <div className="empty-message">No channels yet</div>
+              <li style={{padding: '6px 16px', paddingLeft: '32px', fontSize: '13px', opacity: '0.6'}}>
+                No channels yet
+              </li>
             ) : (
               channels.map((channel) => (
-                <div
+                <li
                   key={channel.id}
                   className={`channel-item ${currentChannel?.id === channel.id ? 'active' : ''}`}
                   onClick={() => selectChannel(channel)}
                 >
-                  <span className="channel-icon">#</span>
-                  <span className="channel-name">{channel.name}</span>
-                  {channel.isPrivate && <span className="private-badge">🔒</span>}
-                </div>
+                  {channel.name}
+                  {channel.isPrivate && ' 🔒'}
+                </li>
               ))
             )}
-          </div>
+          </ul>
         </div>
       )}
-    </div>
+    </>
   );
 };
 

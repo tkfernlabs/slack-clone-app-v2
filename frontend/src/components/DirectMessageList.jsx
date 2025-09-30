@@ -85,10 +85,12 @@ const DirectMessageList = ({ onSelectConversation, selectedUserId }) => {
   }
 
   return (
-    <div className="dm-list">
-      <div className="dm-list-header">
-        <h3>Direct Messages</h3>
-        <button className="btn-new-dm" onClick={handleNewDM} title="New Direct Message">
+    <div className="sidebar-section">
+      <div className="sidebar-section-header">
+        <div className="sidebar-section-title">
+          Direct Messages
+        </div>
+        <button className="sidebar-add-btn" onClick={handleNewDM} title="New Direct Message">
           +
         </button>
       </div>
@@ -134,19 +136,16 @@ const DirectMessageList = ({ onSelectConversation, selectedUserId }) => {
         </div>
       )}
 
-      <div className="dm-list-items">
+      <ul className="dm-list">
         {conversations.length === 0 ? (
-          <div className="dm-list-empty">
-            <p>No conversations yet</p>
-            <button className="btn-start-dm" onClick={handleNewDM}>
-              Start a conversation
-            </button>
-          </div>
+          <li className="dm-start-conversation" onClick={handleNewDM}>
+            Start a conversation
+          </li>
         ) : (
           conversations.map(conv => (
-            <div
+            <li
               key={conv.other_user_id}
-              className={`dm-list-item ${selectedUserId === conv.other_user_id ? 'active' : ''}`}
+              className={`dm-item ${selectedUserId === conv.other_user_id ? 'active' : ''} ${conv.status === 'online' ? 'online' : 'offline'}`}
               onClick={() => onSelectConversation({
                 id: conv.other_user_id,
                 username: conv.username,
@@ -155,25 +154,11 @@ const DirectMessageList = ({ onSelectConversation, selectedUserId }) => {
                 status: conv.status
               })}
             >
-              <div className="dm-avatar">
-                {(conv.display_name || conv.username || '?').charAt(0).toUpperCase()}
-              </div>
-              <div className="dm-info">
-                <div className="dm-name">
-                  {conv.display_name || conv.username}
-                  <span className={`status-dot ${conv.status || 'offline'}`}></span>
-                </div>
-                <div className="dm-last-message">
-                  {formatLastMessage(conv.last_message)}
-                </div>
-              </div>
-              <div className="dm-time">
-                {formatTime(conv.last_message_at)}
-              </div>
-            </div>
+              {conv.display_name || conv.username}
+            </li>
           ))
         )}
-      </div>
+      </ul>
     </div>
   );
 };
