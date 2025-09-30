@@ -11,12 +11,15 @@
   --background: #f8f8f8;
   --sidebar-bg: #3f0e40;
   --sidebar-hover: #350d36;
+  --sidebar-active: #1164a3;
   --text-primary: #1d1c1d;
   --text-secondary: #616061;
   --text-light: #ffffff;
+  --text-sidebar: rgba(255, 255, 255, 0.9);
   --border-color: #e0e0e0;
   --error-color: #e01e5a;
   --success-color: #2BAC76;
+  --message-hover: #f8f8f8;
 }
 
 body {
@@ -211,10 +214,11 @@ body {
 }
 
 .section-header h3 {
-  font-size: 0.875rem;
-  text-transform: uppercase;
-  font-weight: 600;
-  opacity: 0.8;
+  font-size: 15px;
+  text-transform: none;
+  font-weight: 700;
+  opacity: 0.9;
+  color: var(--text-sidebar);
 }
 
 .btn-icon {
@@ -248,10 +252,12 @@ body {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 4px;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.15s;
+  color: var(--text-sidebar);
+  font-size: 15px;
 }
 
 .workspace-item:hover,
@@ -261,7 +267,8 @@ body {
 
 .workspace-item.active,
 .channel-item.active {
-  background-color: var(--secondary-color);
+  background-color: var(--sidebar-active);
+  font-weight: 600;
 }
 
 .workspace-avatar {
@@ -409,13 +416,13 @@ body {
 .message {
   display: flex;
   gap: 0.75rem;
-  padding: 0.5rem;
-  border-radius: 4px;
-  transition: background-color 0.2s;
+  padding: 0.5rem 1.25rem;
+  border-radius: 0;
+  transition: background-color 0.1s;
 }
 
 .message:hover {
-  background-color: var(--background);
+  background-color: var(--message-hover);
 }
 
 .message-avatar {
